@@ -106,3 +106,17 @@ This work is built on many amazing research works and open-source projects:
 Thanks for their excellent work and great contribution to 3D generation area.
 
 We would like to express our special gratitude to [Jiaxiang Tan](https://github.com/ashawkey), [Yuan Liu](https://github.com/liuyuan-pal) for the valuable discussion in LGM and SyncDreamer.
+
+
+## Citation	
+
+```
+@misc{zuo2024videomv,
+      title={VideoMV: Consistent Multi-View Generation Based on Large Video Generative Model}, 
+      author={Qi Zuo and Xiaodong Gu and Lingteng Qiu and Yuan Dong and Zhengyi Zhao and Weihao Yuan and Rui Peng and Siyu Zhu and Zilong Dong and Liefeng Bo and Qixing Huang},
+      year={2024},
+      eprint={2403.12010},
+      archivePrefix={arXiv},
+      primaryClass={cs.CV}
+}
+```
