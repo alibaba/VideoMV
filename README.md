@@ -94,6 +94,12 @@ CUDA_VISIBLE_DEVICES=0 python train_net.py --cfg ./configs/i2vgen_xl_train.yaml
 
 - Remove the background of test image use [Background-Remover](https://www.remove.bg/) instead of rembg to get a better result. The artifacts of segmentation mask will influence the quality of multi-view generation results.
 
+## Future Works
+
+- Dense View Large Reconstruction Model.
+
+- More general and high-quality Text-to-MV using better Video Diffusion Model(like HiGen) and novel finetuning techniques.
+
 ## Acknowledgement
 
 This work is built on many amazing research works and open-source projects:
@@ -105,7 +111,7 @@ This work is built on many amazing research works and open-source projects:
 
 Thanks for their excellent work and great contribution to 3D generation area.
 
-We would like to express our special gratitude to [Jiaxiang Tan](https://github.com/ashawkey), [Yuan Liu](https://github.com/liuyuan-pal) for the valuable discussion in LGM and SyncDreamer.
+We would like to express our special gratitude to [Jiaxiang Tang](https://github.com/ashawkey), [Yuan Liu](https://github.com/liuyuan-pal) for the valuable discussion in LGM and SyncDreamer.
 
 
 ## Citation	
