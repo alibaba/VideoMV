@@ -1,0 +1,41 @@
+TASK_TYPE: inference_text2video_entrance
+use_fp16: False
+guide_scale: 9.0
+chunk_size: 4
+decoder_bs: 4
+max_frames: 24
+target_fps: 8      # FPS Conditions, not encoding fps
+scale: 8
+batch_size: 1
+use_zero_infer: True 
+
+round: 2
+seed: 11
+
+test_list_path: ./data/test_prompts.txt
+vldm_cfg: configs/t2v_train.yaml
+test_model: /mnt/cap/muyuan/code/StableVideoDiffusion/StableVideoDiffusion/i2vgen-xl/i2vgen-xl/workspace/prompt_add_grey_background_3d_asset_dataX1000_add_pose_gs_uniform_bg/t2v_train/checkpoints/non_ema_00333000.pth
+log_dir: ./workspace/visualization/t2v
+
+UNet: {
+    'type': 'UNetSD_T2VBase',
+    'in_dim': 4,
+    'y_dim': 1024,
+    'upper_len': 128,
+    'context_dim': 1024,
+    'out_dim': 4,
+    'dim_mult': [1, 2, 4, 4],
+    'num_heads': 8,
+    'default_fps': 8,
+    'head_dim': 64,
+    'num_res_blocks': 2,
+    'dropout': 0.1,
+    'misc_dropout': 0.4,
+    'temporal_attention': True,
+    'temporal_attn_times': 1,
+    'use_checkpoint': True,
+    'use_fps_condition': False,
+    'use_camera_condition': True, # Turn off this if you are trained on multi-view images with fixed poses.
+    'use_lgm_refine': True,
+    'use_sim_mask': False
+}

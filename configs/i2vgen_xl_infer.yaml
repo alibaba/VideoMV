@@ -1,0 +1,42 @@
+TASK_TYPE: inference_i2vgen_entrance
+use_fp16: True
+guide_scale: 6.0
+use_fp16: True
+chunk_size: 2
+decoder_bs: 2
+max_frames: 24
+target_fps: 8      # FPS Conditions, not the encoding fps
+scale: 8
+seed: 9999
+round: 4
+batch_size: 1
+use_zero_infer: True 
+
+# For important input
+vldm_cfg: configs/i2vgen_xl_train.yaml
+test_list_path: data/test_images.txt
+test_model: /mnt/cap/muyuan/code/StableVideoDiffusion/StableVideoDiffusion/i2vgen-xl/i2vgen-xl/workspace/experiments_i2v_v4_lgm_fintune/i2vgen_xl_train/checkpoints/non_ema_00882000.pth
+log_dir: "workspace/visualization/i2v"
+
+UNet: {
+    'type': 'UNetSD_I2VGen',
+    'in_dim': 4,
+    'y_dim': 1024,
+    'upper_len': 128,
+    'context_dim': 1024,
+    'concat_dim': 4,
+    'out_dim': 4,
+    'dim_mult': [1, 2, 4, 4],
+    'num_heads': 8,
+    'default_fps': 8,
+    'head_dim': 64,
+    'num_res_blocks': 2,
+    'dropout': 0.1,
+    'temporal_attention': True,
+    'temporal_attn_times': 1,
+    'use_checkpoint': True,
+    'use_fps_condition': False,
+    'use_camera_condition': True,
+    'use_lgm_refine': True, # Turn off this if you want to simply fintune a naive i2vgen-xl
+    'use_sim_mask': False
+}
