@@ -12,6 +12,11 @@ Zhengyi Zhao,
 [Liefeng Bo](https://research.cs.washington.edu/istc/lfb/),
 [Qixing Huang](https://www.cs.utexas.edu/~huangqx/)
 
+
+
+https://github.com/alibaba/VideoMV/assets/58206232/3a78e28d-bda4-4d4c-a2ae-994d0320a301
+
+
 ## [Project page](https://aigc3d.github.io/VideoMV) | [Paper](https://arxiv.org/abs/2311.16918) | [YouTube](https://www.youtube.com/watch?v=zxjX5p0p0Ks) | [3D Rendering Dataset](https://aigc3d.github.io/gobjaverse)
 
 ## TODO  :triangular_flag_on_post:
