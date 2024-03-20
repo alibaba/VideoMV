@@ -15,8 +15,8 @@ Zhengyi Zhao,
 ## [Project page](https://aigc3d.github.io/VideoMV) | [Paper](https://arxiv.org/abs/2311.16918) | [YouTube](https://www.youtube.com/watch?v=zxjX5p0p0Ks) | [3D Rendering Dataset](https://aigc3d.github.io/gobjaverse)
 
 ## TODO  :triangular_flag_on_post:
-- [-]  Release text-to-mv (G-Objaverse + Laion) training code and pretrained model.
-- [-]  Release GS、Neus、NeRF reconstruction code.
+- [+]  Release text-to-mv (G-Objaverse + Laion) training code and pretrained model.
+- [+]  Release GS、Neus、NeRF reconstruction code.
 - [x]  Release the training code.
 - [x]  Release multi-view inference code and pretrained weight(G-Objaverse).
 
