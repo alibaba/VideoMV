@@ -12,19 +12,17 @@ Zhengyi Zhao,
 [Liefeng Bo](https://research.cs.washington.edu/istc/lfb/),
 [Qixing Huang](https://www.cs.utexas.edu/~huangqx/)
 
-https://github.com/hitsz-zuoqi/VideoMV/asset/project_head_video.mp4
-
 ## [Project page](https://aigc3d.github.io/VideoMV) | [Paper](https://arxiv.org/abs/2311.16918) | [YouTube](https://www.youtube.com/watch?v=zxjX5p0p0Ks) | [3D Rendering Dataset](https://aigc3d.github.io/gobjaverse)
 
 ## TODO  :triangular_flag_on_post:
-- [] Release text-to-mv (G-Objaverse + Laion) training code and pretrained model.
-- [] Release GS、Neus、NeRF reconstruction code.
+- [-]  Release text-to-mv (G-Objaverse + Laion) training code and pretrained model.
+- [-]  Release GS、Neus、NeRF reconstruction code.
 - [x]  Release the training code.
 - [x]  Release multi-view inference code and pretrained weight(G-Objaverse).
 
 ## Architecture
 
-![architecture](asset/f.png)
+![architecture](assets/f.png)
 
 ## Install
 
@@ -92,7 +90,7 @@ CUDA_VISIBLE_DEVICES=0 python train_net.py --cfg ./configs/i2vgen_xl_train.yaml
 
 - You will not observe a sudden convergence in Image-to-MV finetuning. Usually it takes half a day for a initial convergence.
 
-- Remove the background of test image use [Background-Remover](https://www.remove.bg/) instead of [Rembg] to get a better result. The artifacts of segmentation mask will influence the quality of multi-view generation results.
+- Remove the background of test image use [Background-Remover](https://www.remove.bg/) instead of rembg to get a better result. The artifacts of segmentation mask will influence the quality of multi-view generation results.
 
 ## Acknowledgement
 
@@ -102,6 +100,7 @@ This work is built on many amazing research works and open-source projects:
 - [LGM](https://github.com/3DTopia/LGM)
 - [SyncDreamer](https://github.com/liuyuan-pal/SyncDreamer)
 - [GaussianSplatting](https://github.com/graphdeco-inria/gaussian-splatting)
+
 Thanks for their excellent work and great contribution to 3D generation area.
 
 We would like to express our special gratitude to [Jiaxiang Tan](https://github.com/ashawkey), [Yuan Liu](https://github.com/liuyuan-pal) for the valuable discussion in LGM and SyncDreamer.
