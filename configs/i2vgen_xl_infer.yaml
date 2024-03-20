@@ -15,7 +15,7 @@ use_zero_infer: True
 # For important input
 vldm_cfg: configs/i2vgen_xl_train.yaml
 test_list_path: data/test_images.txt
-test_model: /mnt/cap/muyuan/code/StableVideoDiffusion/StableVideoDiffusion/i2vgen-xl/i2vgen-xl/workspace/experiments_i2v_v4_lgm_fintune/i2vgen_xl_train/checkpoints/non_ema_00882000.pth
+test_model: ./pretrained_models/i2v_00882000.pth
 log_dir: "workspace/visualization/i2v"
 
 UNet: {

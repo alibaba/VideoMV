@@ -14,7 +14,7 @@ seed: 11
 
 test_list_path: ./data/test_prompts.txt
 vldm_cfg: configs/t2v_train.yaml
-test_model: /mnt/cap/muyuan/code/StableVideoDiffusion/StableVideoDiffusion/i2vgen-xl/i2vgen-xl/workspace/prompt_add_grey_background_3d_asset_dataX1000_add_pose_gs_uniform_bg/t2v_train/checkpoints/non_ema_00333000.pth
+test_model: ./pretrained_modesl/t2v_00333000.pth
 log_dir: ./workspace/visualization/t2v
 
 UNet: {
