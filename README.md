@@ -17,8 +17,8 @@ https://github.com/alibaba/VideoMV/assets/58206232/3a78e28d-bda4-4d4c-a2ae-994d0
 ## [Project page](https://aigc3d.github.io/VideoMV) | [Paper](https://arxiv.org/abs/2311.16918) | [YouTube](https://www.youtube.com/watch?v=zxjX5p0p0Ks) | [3D Rendering Dataset](https://aigc3d.github.io/gobjaverse)
 
 ## TODO  :triangular_flag_on_post:
-- [ ]  Release text-to-mv (G-Objaverse + Laion) training code and pretrained model.
 - [ ]  Release GS、Neus、NeRF reconstruction code.
+- [x]  News: Release text-to-mv (G-Objaverse + Laion) training code and pretrained model(2024.04.22). Check the Inference&&Training Guidelines.
 - [x]  Release the training code.
 - [x]  Release multi-view inference code and pretrained weight(G-Objaverse).
 
@@ -48,6 +48,12 @@ wget https://virutalbuy-public.oss-cn-hangzhou.aliyuncs.com/share/aigc3d/pretrai
 unzip pretrained_models.zip
 # text-to-mv sampling
 CUDA_VISIBLE_DEVICES=0 python inference.py --cfg ./configs/t2v_infer.yaml
+# text-to-mv sampling using pretrained model trained on laion+Gobjaverse
+wget oss://virutalbuy-public/share/aigc3d/videomv_laion/non_ema_00365000.pth
+# modify the [test_model] as the location of [non_ema_00365000.pth]
+CUDA_VISIBLE_DEVICES=0 python inference.py --cfg ./configs/t2v_infer.yaml
+
+
 # image-to-mv sampling
 CUDA_VISIBLE_DEVICES=0 python inference.py --cfg ./configs/i2vgen_xl_infer.yaml
 
@@ -73,6 +79,9 @@ CUDA_VISIBLE_DEVICES=0 python inference.py --cfg ./configs/i2vgen_xl_infer.yaml
 
 # Text-to-mv finetuning
 CUDA_VISIBLE_DEVICES=0 python train_net.py --cfg ./configs/t2v_train.yaml
+# Text-to-mv fintuning using both Laion and Gobjaverse. 
+# (Note we use 24 A100 for training both datasets. If your computation resource is not sufficient, do not try it!)
+CUDA_VISIBLE_DEVICES=0 python train_net.py --cfg ./configs/t2v_train_laion.yaml
 
 # Text-to-mv Feed-forward reconstruction finetuning.
 # Modify the UNet.use_lgm_refine as 'True' in ./configs/t2v_train.yaml. Then

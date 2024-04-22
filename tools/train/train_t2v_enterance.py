@@ -47,7 +47,6 @@ def train_t2v_entrance(cfg_update,  **kwargs):
     cfg.pmi_rank = int(os.getenv('RANK', 0)) # 0
     cfg.pmi_world_size = int(os.getenv('WORLD_SIZE', 1))
     setup_seed(cfg.seed)
-    # print(cfg.pmi_rank, cfg.pmi_world_size)
 
     if cfg.debug:
         cfg.gpus_per_machine = 1
@@ -69,7 +68,6 @@ def worker(gpu, cfg):
     '''
     cfg.gpu = gpu
     cfg.rank = cfg.pmi_rank * cfg.gpus_per_machine + gpu
-    # print("---",cfg.rank, cfg.gpu)
     if not cfg.debug:
         torch.cuda.set_device(gpu)
         torch.backends.cudnn.benchmark = True
@@ -103,6 +101,7 @@ def worker(gpu, cfg):
     cfg.max_frames = cfg.frame_lens[cfg.rank % len_frames]
     cfg.batch_size = cfg.batch_sizes[str(cfg.max_frames)]
     cfg.sample_fps = cfg.sample_fps[cfg.rank % len_fps]
+    # cfg.UNet
     
     if cfg.rank == 0:
         logging.info(f'Currnt worker with max_frames={cfg.max_frames}, batch_size={cfg.batch_size}, sample_fps={cfg.sample_fps}')
@@ -123,14 +122,49 @@ def worker(gpu, cfg):
     else:
         dataset = DATASETS.build(cfg.vid_dataset, sample_fps=cfg.sample_fps, transforms=train_trans, vit_transforms=vit_trans, max_frames=cfg.max_frames)
     
-    sampler = DistributedSampler(dataset, num_replicas=cfg.world_size, rank=cfg.rank) if (cfg.world_size > 1 and not cfg.debug) else None
-    dataloader = DataLoader(
-        dataset, 
-        sampler=sampler,
-        batch_size=cfg.batch_size,
-        num_workers=cfg.num_workers,
-        pin_memory=True,
-        prefetch_factor=cfg.prefetch_factor)
+    img_world_size = 0
+    for loc_rank in range(cfg.world_size):
+        if loc_rank % len_frames == 0:
+            if cfg.frame_lens[0] == 1 and cfg.img_dataset.type == "LAIONImageDataset":
+                img_world_size += 1
+    video_world_size = cfg.world_size - img_world_size   
+    logging.info(f"Rank:{cfg.rank}, world_size:{cfg.world_size}, img_world_size:{img_world_size}, video_world_size:{video_world_size}")
+    print(f"Rank:{cfg.rank}, world_size:{cfg.world_size}, img_world_size:{img_world_size}, video_world_size:{video_world_size}")
+
+    if cfg.max_frames == 1 and cfg.img_dataset.type == "LAIONImageDataset":
+        dataloader = dataset.create_dataloader(batch_size=cfg.batch_size, 
+                                               world_size=img_world_size, workers=cfg.num_workers)
+        logging.info(f"Rank:{cfg.rank}, world_size:{cfg.world_size}, img_world_size:{img_world_size}, video_world_size:{video_world_size}, webdataset len:{dataloader.num_batches}, batch_size:{cfg.batch_size}")
+
+    else:
+        if video_world_size == cfg.world_size:
+            sampler = DistributedSampler(dataset, num_replicas=cfg.world_size, rank=cfg.rank, drop_last=True) if (cfg.world_size > 1 and not cfg.debug) else None
+        else:
+            rank = cfg.rank
+            if cfg.rank >= video_world_size:
+                rank = (cfg.rank - video_world_size) * len_frames
+                print(f"Rank:{cfg.rank}, dist_sample_rank: {rank}, world_size:{cfg.world_size}, video_world_size:{video_world_size}")
+            sampler = DistributedSampler(dataset, num_replicas=video_world_size, rank=rank, drop_last=True) if (cfg.world_size > 1 and not cfg.debug) else None
+                
+        dataloader = DataLoader(
+            dataset,
+            sampler=sampler,
+            batch_size=cfg.batch_size,
+            num_workers=cfg.num_workers,
+            pin_memory=True,
+            prefetch_factor=cfg.prefetch_factor,
+            drop_last=True)
+        logging.info(f"Rank:{cfg.rank}, dataset len:{len(dataloader)}, batch_size:{cfg.batch_size}")
+
+
+    # sampler = DistributedSampler(dataset, num_replicas=cfg.world_size, rank=cfg.rank) if (cfg.world_size > 1 and not cfg.debug) else None
+    # dataloader = DataLoader(
+    #     dataset, 
+    #     sampler=sampler,
+    #     batch_size=cfg.batch_size,
+    #     num_workers=cfg.num_workers,
+    #     pin_memory=True,
+    #     prefetch_factor=cfg.prefetch_factor)
     rank_iter = iter(dataloader) 
     
     # [Model] embedder
@@ -153,30 +187,26 @@ def worker(gpu, cfg):
 
     resume_step = 1
     model, resume_step = PRETRAIN.build(cfg.Pretrain, model=model)
-    if cfg.UNet.use_lgm_refine:
-        model.resume_lgm(cfg.lgm_pretrain) # initialize lgm
+    # model.resume_lgm(cfg.lgm_pretrain) # initialize lgm
     torch.cuda.empty_cache()
 
     if cfg.use_ema:
         ema = model.module.state_dict() if hasattr(model, 'module') else model.state_dict()
         ema = type(ema)([(k, ema[k].data.clone()) for k in list(ema.keys())[cfg.rank::cfg.world_size]])
     
-    if cfg.UNet.use_lgm_refine:
-        for k,v in model.named_parameters():
-            if v.requires_grad and 'lgm_big' not in k:
-                v.requires_grad = False
+
+    # for k,v in model.named_parameters():
+    #     if v.requires_grad and 'lgm_big' not in k:
+    #         v.requires_grad = False
 
     # optimizer
     optimizer = optim.AdamW(params=filter(lambda p: p.requires_grad, model.parameters()),
             lr=cfg.lr, weight_decay=cfg.weight_decay)
     scaler = amp.GradScaler(enabled=cfg.use_fp16)
     
-    if cfg.UNet.use_lgm_refine:
-        os.system("rm ./trainable_params_t2v.txt")
-        for k,v in model.named_parameters():
-            if v.requires_grad:
-                with open('trainable_params_t2v.txt','a',encoding='utf8') as file:
-                    file.write(k+"\n")
+    # for k,v in model.named_parameters():
+    #     if v.requires_grad:
+    #         print(k)
 
     if cfg.use_fsdp:
         config = {}
@@ -195,7 +225,8 @@ def worker(gpu, cfg):
         decay_mode=cfg.decay_mode)      # 'cosine'
     
     # [Visual]
-    viz_num = min(cfg.batch_size, 8)
+    # viz_num = min(cfg.batch_size, 8)
+    viz_num = cfg.batch_size
     visual_func = VISUAL.build(
         cfg.visual_train,
         cfg_global=cfg,
@@ -313,7 +344,49 @@ def worker(gpu, cfg):
                 input_kwards = {
                     'model': model, 'video_data': video_data[:viz_num], 'step': step, 
                     'ref_frame': ref_frame[:viz_num], 'captions': captions[:viz_num]}
-                visual_func.run(visual_kwards=visual_kwards, **input_kwards)
+
+                # No validation in Objaverse
+                # visual_func.run(visual_kwards=visual_kwards, **input_kwards)
+
+
+                # validation
+                validation_text = "./data/dreamfusion420.txt"
+                assert os.path.exists(validation_text), f"validation text:{validation_text} do not exist!"
+                with open(validation_text, "r") as fp:
+                    captions_test = fp.read().strip().split("\n")
+                    captions_test = [e.strip("\"").strip(".").replace(", 3d asset", "") + ", 3d asset" for e in captions_test if len(e) > 0]
+                if (cfg.rank + 1) * cfg.batch_size <= len(captions_test):
+                    rank = max(0, cfg.rank - 1)
+                    captions_test = captions_test[rank * cfg.batch_size:(rank + 1) * cfg.batch_size]
+                    # preprocess
+                    with torch.no_grad():
+                        _, _, y_words = clip_encoder(text=captions_test) # bs * 1 *1024 [B, 1, 1024]
+                        y_words_0 = y_words.clone()
+                else:
+                    captions_test = captions
+
+                visual_kwards_test = [
+                    {
+                        'y': y_words_0[:viz_num],
+                        'fps': fps_tensor[:viz_num],
+                        'camera_data': camera_data[:viz_num],
+                        'gs_data': gs_data,
+                    },
+                    {
+                        'y': zero_y_negative.repeat(y_words_0.size(0), 1, 1),
+                        'fps': fps_tensor[:viz_num],
+                        'camera_data': camera_data[:viz_num],
+                        'gs_data': gs_data,
+                    }
+                ]
+
+                input_kwards = {
+                    'model': model.eval(), 'video_data': video_data[:viz_num], 'step': step,
+                    'ref_frame': torch.ones_like(ref_frame[:viz_num]), 'captions': captions_test[:viz_num]}
+                
+                logging.info(f"############# testing ##############")
+                visual_func.run(visual_kwards=visual_kwards_test, **input_kwards)
+                # visual_func.run(visual_kwards=visual_kwards_test, save_prefix="test", **input_kwards)
                 # except Exception as e:
                 #     logging.info(f'Save videos with exception {e}')
         
