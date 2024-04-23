@@ -20,7 +20,7 @@ https://github.com/alibaba/VideoMV/assets/58206232/3a78e28d-bda4-4d4c-a2ae-994d0
 - [ ]  Release GS、Neus、NeRF reconstruction code.
 - [x]  News: Release text-to-mv (G-Objaverse + Laion) training code and pretrained model(2024.04.22). Check the Inference&&Training Guidelines.
 
-
+Generated Multi-View Images from DreamFusion420：
 https://github.com/alibaba/VideoMV/assets/58206232/3a4e84e9-a4b2-4ecc-a3e8-7a898e6c3f1a
 
 
